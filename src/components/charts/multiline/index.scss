@@ -1,0 +1,35 @@
+.line-chart-container {
+  background-color: #e4ecf6;
+  border-radius: 10px;
+
+  .header {
+    text-anchor: middle;
+    alignment-baseline: middle;
+  }
+
+  .header,
+  .text-label,
+  .axis text,
+  .legend-group text {
+    fill: #2b3f5e;
+  }
+
+  .text-label {
+    text-anchor: middle;
+  }
+
+  .axis-group {
+    .axis {
+      &.bottom {
+        .tick {
+          &:first-of-type,
+          &:last-of-type {
+            text {
+              visibility: hidden;
+            }
+          }
+        }
+      }
+    }
+  }
+}
