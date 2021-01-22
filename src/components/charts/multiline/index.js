@@ -1,4 +1,5 @@
 import React, { memo } from "react";
+import { union } from "d3-array";
 
 import Text from "./text";
 import XYAxis from "./xyaxis";
@@ -25,15 +26,21 @@ export default memo(
     margins,
     legendMargins,
   }) => {
-    const legendWidth = width / 5 - legendMargins.left - legendMargins.right;
-    const chartWidth = width - legendWidth - margins.left - margins.right;
+    const legendWidth =
+      width / (7 + data.length) - legendMargins.left - legendMargins.right;
+    const chartWidth =
+      width - legendWidth * data.length - margins.left - margins.right;
     const chartHeight = height - margins.top - margins.bottom;
 
     const xScale = d3.scaleLinear().domain([-1, 33]).range([0, chartWidth]);
-
     const yScale = d3
       .scaleLinear()
-      .domain(d3.extent(d3.merge(data.map((d) => d.values)), (d) => d.cases))
+      .domain(
+        d3.extent(
+          d3.merge(d3.merge(data.map((d) => d.values)).map((d) => d.values)),
+          (d) => d.cases
+        )
+      )
       .range([chartHeight, 0]);
 
     const lineGenerator = d3
@@ -41,11 +48,20 @@ export default memo(
       .x((d) => xScale(+d.date.split("/")[1]))
       .y((d) => yScale(d.cases));
 
-    const lineNames = data.map((d) => d.key);
-    const lineColor = d3
-      .scaleOrdinal()
-      .domain(lineNames)
+    const lineNames = union(
+      ...data.map((d) => [...d.values.map((_d) => _d.key)])
+    );
+
+    const yearColor = d3
+      .scaleLinear()
+      .domain(d3.ticks(0, data.length, data.length))
       .range(MULTILINE_COLORS);
+
+    const lineColor = (year) =>
+      d3
+        .scaleLinear()
+        .domain([-4, lineNames.size])
+        .range(["white", yearColor(year)]);
 
     return (
       <svg className="line-chart-container" width={width} height={height}>
@@ -76,38 +92,43 @@ export default memo(
               margin: margins,
             }}
           />
-          <g className="line-group">
-            {data.map((entry, index) => (
-              <React.Fragment key={index}>
-                <Line
-                  data={entry.values}
-                  lineGenerator={lineGenerator}
-                  color={lineColor(entry.key)}
-                />
-                <g className="circles-group">
-                  {entry.values.map((entryValue, entryIndex) => (
-                    <React.Fragment key={entryIndex}>
-                      <Circle
-                        cx={xScale(+entryValue.date.split("/")[1])}
-                        cy={yScale(entryValue.cases)}
-                        color={lineColor(entry.key)}
-                      />
-                    </React.Fragment>
-                  ))}
-                </g>
-              </React.Fragment>
-            ))}
-          </g>
-          <Legend
-            data={lineNames}
-            width={legendWidth}
-            height={chartHeight}
-            color={lineColor}
-            textSize={14}
-            transform={`translate(${chartWidth + legendMargins.left}, ${
-              legendMargins.top
-            })`}
-          />
+          {data.map((item, index) => (
+            <React.Fragment key={index}>
+              <g className="line-group">
+                {item.values.map((lineData, lineKey) => (
+                  <React.Fragment key={lineKey}>
+                    <Line
+                      data={lineData.values}
+                      lineGenerator={lineGenerator}
+                      color={lineColor(index)(lineKey)}
+                    />
+                    <g className="circles-group">
+                      {lineData.values.map((lineDataV, lineDataI) => (
+                        <Circle
+                          key={lineDataI}
+                          cx={xScale(+lineDataV.date.split("/")[1])}
+                          cy={yScale(lineDataV.cases)}
+                          color={lineColor(index)(lineKey)}
+                        />
+                      ))}
+                    </g>
+                  </React.Fragment>
+                ))}
+              </g>
+              <Legend
+                key={index}
+                header={item.key}
+                data={item.values.map((d) => d.key)}
+                width={legendWidth}
+                height={chartHeight}
+                color={lineColor(index)}
+                textSize={14}
+                transform={`translate(${
+                  chartWidth + legendWidth * index + legendMargins.left
+                }, ${legendMargins.top})`}
+              />
+            </React.Fragment>
+          ))}
         </g>
       </svg>
     );

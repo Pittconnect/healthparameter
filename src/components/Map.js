@@ -23,6 +23,7 @@ import { useFetch } from "../hooks";
 const d3 = window.d3;
 
 const TOKEN = process.env.REACT_APP_MAPBOX_ACCESS;
+const MAP_STYLE = process.env.REACT_APP_MAPBOX_STYLE;
 
 const Map = () => {
   const [viewport, setViewport] = useState({
@@ -42,7 +43,7 @@ const Map = () => {
     }
   );
   const [selectedState, setSelectedState] = useState("");
-  const [selectedCounty, setSelectedCounty] = useState("");
+  const [selectedCounty, setSelectedCounty] = useState({ name: "", fips: "" });
   const [isStateMode, setIsStateMode] = useState(true);
   const [statesInfo, setStatesInfo] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -96,7 +97,7 @@ const Map = () => {
       const mapZoom = map.getZoom();
       if (mapZoom < ZOOM.COUNTIES) {
         setIsStateMode(true);
-        setSelectedCounty("");
+        setSelectedCounty({ name: "", fips: "" });
       } else {
         setIsStateMode(false);
         setSelectedState("");
@@ -167,7 +168,8 @@ const Map = () => {
   const getMonthlyCases = (dataSet) =>
     d3
       .nest()
-      .key((d) => moment(d.date, "M/D/YY", true).format("MMMM"))
+      .key((d) => moment(d.date, "M/D/YY", true).format("YYYY"))
+      .key((d) => moment(d.date, "M/D/YY", true).format("MMM"))
       .entries(dataSet);
 
   const updatedStateData = useMemo(() => {
@@ -186,9 +188,9 @@ const Map = () => {
   }, [selectedState, statesInfo]);
 
   const updateCountyData = useMemo(() => {
-    if (trackers && selectedCounty) {
+    if (trackers && selectedCounty.fips) {
       const countyInfo = trackers.find(
-        (county) => +county.FIPS === +selectedCounty
+        (county) => +county.FIPS === +selectedCounty.fips
       );
 
       if (countyInfo) {
@@ -205,7 +207,17 @@ const Map = () => {
         return countyMonthlyCases;
       }
     }
-  }, [selectedCounty, trackers, datesHeader]);
+  }, [selectedCounty.fips, trackers, datesHeader]);
+
+  const chartData = useMemo(
+    () => (isStateMode ? updatedStateData : updateCountyData),
+    [isStateMode, updatedStateData, updateCountyData]
+  );
+
+  const adminUnit = useMemo(
+    () => (isStateMode ? selectedState : selectedCounty.name),
+    [isStateMode, selectedState, selectedCounty.name]
+  );
 
   const getStateInfo = (feature) => {
     const stateName = feature.properties.NAME;
@@ -214,14 +226,14 @@ const Map = () => {
   };
 
   const getCountyInfo = (feature) => {
-    const { GEO_ID /*  STATE, NAME */ } = feature.properties;
+    const { GEO_ID, NAME /*  STATE */ } = feature.properties;
 
     const indStartPos = GEO_ID.includes("US0")
       ? GEO_ID.indexOf("US0") + 3
       : GEO_ID.indexOf("US") + 2;
     const countyFIPS = GEO_ID.substring(indStartPos, GEO_ID.length);
 
-    setSelectedCounty(countyFIPS);
+    setSelectedCounty({ fips: countyFIPS, name: NAME });
   };
 
   useEffect(() => {
@@ -299,9 +311,7 @@ const Map = () => {
         width="100vw"
         height="100vh"
         mapboxApiAccessToken={TOKEN}
-        mapStyle="mapbox://styles/alexnorvag/ck9efq0oz2d0x1ioftrtazzyz"
-        // mapStyle="mapbox://styles/alexnorvag/ck9efq0oz2d0x1ioftrtazzyz/draft"
-
+        mapStyle={MAP_STYLE}
         onViewStateChange={_onViewStateChange}
         onLoad={_onLoad}
         onHover={_onMouseHover}
@@ -319,15 +329,15 @@ const Map = () => {
             <div className="popup-container">
               <div className="popup-chart">
                 {!error ? (
-                  (isStateMode ? updatedStateData : updateCountyData) && (
+                  chartData && (
                     <MultilineChart
-                      data={isStateMode ? updatedStateData : updateCountyData}
-                      header={"Daily changes in Covid-19 confirmations"}
+                      data={chartData}
+                      header={`Daily changes in Covid-19 confirmations, ${adminUnit}`}
                       xAxisLabel={"Date"}
                       yAxisLabel={"Daily changes"}
                       xAxisTicks={32}
                       yAxisTicks={26}
-                      width={650}
+                      width={850}
                       height={390}
                       margins={{ top: 50, right: 10, bottom: 50, left: 60 }}
                       legendMargins={{ top: 20, right: 0, bottom: 0, left: 10 }}
