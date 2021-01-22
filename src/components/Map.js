@@ -317,6 +317,7 @@ const Map = () => {
         onHover={_onMouseHover}
         minZoom={ZOOM.MIN}
         maxZoom={ZOOM.MAX}
+        attributionControl={false}
       >
         {Object.entries(popupCoords).length !== 0 && (
           <Popup
