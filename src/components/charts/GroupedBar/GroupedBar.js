@@ -1,10 +1,10 @@
 import React from "react";
+import * as d3 from 'd3'
+
 import Rect from "./Rect";
 import Text from "./Text";
 import RectLegend from "../../legends/BarRectLegend";
 import { GROUPED_BAR_COLORS } from "../../../helpers";
-
-const d3 = window.d3;
 
 const GroupedBar = ({
   width,

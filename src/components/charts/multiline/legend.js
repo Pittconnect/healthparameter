@@ -1,6 +1,5 @@
 import React, { useEffect, useRef } from "react";
-
-const d3 = window.d3;
+import * as d3 from 'd3'
 
 export default ({
   data,

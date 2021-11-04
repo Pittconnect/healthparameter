@@ -1,4 +1,5 @@
 import React, { memo } from "react";
+import * as d3 from "d3";
 import { union } from "d3-array";
 
 import Text from "./text";
@@ -10,8 +11,6 @@ import Legend from "./legend";
 import { MULTILINE_COLORS } from "../../../helpers";
 
 import "./index.scss";
-
-const d3 = window.d3;
 
 export default memo(
   ({

@@ -1,8 +1,8 @@
 import React from "react";
+import * as d3 from 'd3'
+
 import RectLegend from "../legends/RectLegend";
 import { CONCENTRIC_COLORS } from "../../helpers";
-
-const d3 = window.d3;
 
 const Circle = ({
   data,

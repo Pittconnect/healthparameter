@@ -6,7 +6,11 @@ import ReactMapGL, {
   NavigationControl,
   WebMercatorViewport,
 } from "react-map-gl";
+import mapboxgl from "mapbox-gl";
 import moment from "moment";
+import * as d3 from "d3";
+import { csvParse } from "d3-dsv";
+
 import {
   statesBoundLayer,
   statesBorderLayer,
@@ -20,7 +24,9 @@ import { ErrorPopup } from "../components/popup";
 import { COVIDTRACKER_API_LINK, ZOOM, BOUNDS } from "../helpers";
 import { useFetch } from "../hooks";
 
-const d3 = window.d3;
+mapboxgl.workerClass =
+  // eslint-disable-next-line import/no-webpack-loader-syntax
+  require("worker-loader!mapbox-gl/dist/mapbox-gl-csp-worker").default;
 
 const TOKEN = process.env.REACT_APP_MAPBOX_ACCESS;
 const MAP_STYLE = process.env.REACT_APP_MAPBOX_STYLE;
@@ -39,7 +45,7 @@ const Map = () => {
     COVIDTRACKER_API_LINK,
     {
       dataFormat: "csv",
-      dataParser: d3.csvParse,
+      dataParser: csvParse,
     }
   );
   const [selectedState, setSelectedState] = useState("");
@@ -53,7 +59,6 @@ const Map = () => {
   const [isStatesLoading, setIsStatesLoading] = useState(false);
 
   const mapRef = useRef();
-  const _sourceRef = useRef();
   const hoveredStateId = useRef(null);
   const hoveredStateSource = useRef(null);
 
@@ -341,7 +346,12 @@ const Map = () => {
                       width={850}
                       height={390}
                       margins={{ top: 50, right: 10, bottom: 50, left: 60 }}
-                      legendMargins={{ top: 20, right: 0, bottom: 0, left: 10 }}
+                      legendMargins={{
+                        top: 20,
+                        right: 0,
+                        bottom: 0,
+                        left: 10,
+                      }}
                     />
                   )
                 ) : (
@@ -356,7 +366,6 @@ const Map = () => {
             id="counties"
             type="geojson"
             data={usGeoJsonCounties}
-            ref={_sourceRef}
             generateId={true}
           >
             <Layer {...countiesBoundLayer} beforeId={"waterway-label"} />
@@ -368,7 +377,6 @@ const Map = () => {
             id="states"
             type="geojson"
             data={usGeoJsonStates}
-            ref={_sourceRef}
             generateId={true}
           >
             <Layer {...statesBoundLayer} beforeId={"waterway-label"} />
@@ -376,9 +384,7 @@ const Map = () => {
           </Source>
         )}
 
-        <div className="map-navigation">
-          <NavigationControl showCompass={false} />
-        </div>
+        <NavigationControl className="map-navigation" showCompass={false} />
       </ReactMapGL>
     </div>
   );

@@ -2,19 +2,27 @@ import "react-app-polyfill/ie11";
 import "react-app-polyfill/stable";
 
 import React from "react";
-import Map from "./components/Map";
+import { BrowserRouter as Router } from "react-router-dom";
+
+import MainRoutes from "./routes/components/MainRoutes";
+import { UserProvider } from "./context/user";
+import { RedirectContainer } from "./layout";
 
 import "./app.scss";
 
 function App() {
   return (
-    <div className="App">
-      <div className="App-container">
-        <div className="covid-map">
-          <Map />
+    <Router>
+      <UserProvider>
+        <div className="app">
+          <div className="app-container uk-width-1-1">
+            <RedirectContainer>
+              <MainRoutes />
+            </RedirectContainer>
+          </div>
         </div>
-      </div>
-    </div>
+      </UserProvider>
+    </Router>
   );
 }
 
