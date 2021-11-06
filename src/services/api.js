@@ -3,7 +3,7 @@ import axios from "axios";
 const instance = axios.create({
   baseURL:
      // "http://localhost:9000/.netlify/functions/server/api/",
-    "https://epic-curie-390efd.netlify.app/.netlify/functions/server/api/",
+    "https://epic-kare-a20d74.netlify.app/.netlify/functions/server/api/",
   responseType: "json",
 });
 
