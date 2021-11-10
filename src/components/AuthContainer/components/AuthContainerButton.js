@@ -2,11 +2,21 @@ import React from "react";
 import clsx from "clsx";
 import { Link } from "react-router-dom";
 
-const AuthContainerButton = ({ id, type, text, link }) => {
+const AuthContainerButton = ({
+  id,
+  type,
+  text,
+  link,
+  component,
+  componentProps,
+}) => {
   const Button = link ? Link : "button";
   const linkName = link && link.substring(1);
+  const AuthButton = component;
 
-  return (
+  return component ? (
+    <AuthButton {...componentProps} />
+  ) : (
     <Button
       id={id}
       type={type}

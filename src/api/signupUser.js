@@ -1,12 +1,11 @@
 import api from "../services/api";
 
-export const signupUser = async ({ username, email, password, payment }) => {
+export const signupUser = async ({ username, email, password }) => {
   try {
     const { data } = await api.post("/register", {
       username,
       email,
       password,
-      payment,
     });
 
     return { data, error: data.success ? null : data.msg };

@@ -1,9 +1,7 @@
 import axios from "axios";
 
 const instance = axios.create({
-  baseURL:
-     "http://localhost:9000/.netlify/functions/server/api/",
-    // "https://epic-curie-390efd.netlify.app/.netlify/functions/server/api/",
+  baseURL: process.env.REACT_APP_API_URL,
   responseType: "json",
 });
 

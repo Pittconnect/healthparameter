@@ -1,7 +1,8 @@
-import React, { useCallback, useEffect } from "react";
+import React, { useCallback, useEffect, useMemo } from "react";
 
 import AuthContainer from "../../components/AuthContainer";
 import Route from "../../routes/state/types";
+import PayButton from "./components/PayButton/PayButton";
 import { useSignupData } from "./hooks/useSignupData";
 
 const Signup = () => {
@@ -9,11 +10,16 @@ const Signup = () => {
     username,
     email,
     password,
+    pricing,
+    memberships,
     error,
     loading,
     setUsername,
     setEmail,
     setPassword,
+    setPricing,
+    createPayment,
+    approvePayment,
     signup,
     reset,
   } = useSignupData();
@@ -38,9 +44,30 @@ const Signup = () => {
       onChange: setPassword,
       type: "password",
     },
+    {
+      id: "pricing",
+      label: "Choose a plan",
+      value: pricing,
+      onChange: setPricing,
+      type: "select",
+      options: memberships,
+    },
   ];
-
-  const buttons = [{ id: "submit", type: "submit", text: "SIGNUP" }];
+  const buttons = useMemo(
+    () => [
+      !+pricing
+        ? { id: "submit", type: "submit", text: "SIGNUP" }
+        : {
+            id: "pricing",
+            component: PayButton,
+            componentProps: {
+              createOrder: createPayment,
+              approveOrder: approvePayment,
+            },
+          },
+    ],
+    [pricing, createPayment, approvePayment]
+  );
   const infoButtons = [{ id: "link", link: Route.LOGIN, text: "Login" }];
 
   const handleSubmit = useCallback(
@@ -50,28 +77,8 @@ const Signup = () => {
       console.log("username: ", username);
       console.log("email: ", email);
       console.log("password: ", password);
-      const payment = {
-        sender_batch_header: {
-          recipient_type: "EMAIL",
-          email_message: "Dbilia USD Payouts",
-          note: "USD withdrawal request",
-          sender_batch_id: new Date().toISOString(), // must be unique per batch
-          email_subject: "[Dbilia] You've requested for withdrawal.",
-        },
-        items: [
-          {
-            note: "USD withdrawal request",
-            amount: {
-              currency: "USD",
-              value: 123,
-            },
-            receiver: "sb-5zwh38384833@business.example.com",
-            sender_item_id: "4FX733YULQG68",
-          },
-        ],
-      };
 
-      signup({ username, email, password, payment });
+      signup({ username, email, password });
     },
     [username, email, password, signup]
   );

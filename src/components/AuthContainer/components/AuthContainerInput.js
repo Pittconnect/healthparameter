@@ -1,11 +1,14 @@
 import React, { useCallback, useMemo } from "react";
 import clsx from "clsx";
 
+import Select from "../../common/Inputs/Select/Select";
+
 const AuthContainerInput = ({
   id,
   label,
   type = "text",
   value,
+  options,
   onChange,
   onToggle,
 }) => {
@@ -31,13 +34,17 @@ const AuthContainerInput = ({
         type === "checkbox" ? "modal__checkbox" : "form__row"
       }`}
     >
-      <input
-        id={id}
-        name={id}
-        className="form__input"
-        type={type}
-        {...inputProps}
-      />
+      {type === "select" ? (
+        <Select id={id} {...inputProps} options={options} />
+      ) : (
+        <input
+          id={id}
+          name={id}
+          className="form__input"
+          type={type}
+          {...inputProps}
+        />
+      )}
       <label
         className={clsx({
           "form__label uk-flex-first": type !== "checkbox",
@@ -46,7 +53,9 @@ const AuthContainerInput = ({
       >
         {label}
       </label>
-      <span className="form__row-border" />
+      <span
+        className={clsx("form__row-border", { "uk-hidden": type === "select" })}
+      />
     </div>
   );
 };

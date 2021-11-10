@@ -977,9 +977,24 @@ svg.svg-intro-bottom {
 	width:100%;
 	height:25px;
 	padding:10px 0;
-	display:block;
 	border-bottom:1px #a8a8a8 solid;
 	background:url(../images/drop-down.png) no-repeat 98% 50%;
+}
+
+.form__select select, select.custom-select, select.custom-select-rendered{
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  -ms-appearance: none;
+  appearance: none;
+  outline: 0;
+  box-shadow: none;
+  border: 0 !important;
+  width:100%;
+  height: 100%;
+  margin: 0;
+  padding:0 ;
+  cursor: pointer;
+  background:none;
 }
 select.select__field{
 	width:100%;
@@ -1589,7 +1604,7 @@ ul.grid__list--fmenu li a:hover {
 }
 
 .modal__wrapper {
-  top: 18%;
+  top: 15%;
   width: 70%;
   margin-left: -35%;
 }
