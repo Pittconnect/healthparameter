@@ -40,6 +40,7 @@
 				& .table__cell{
 					min-height:50px;
 				}
+			flex-direction: column;
 		}
 	}
 	& .table__body{
@@ -53,6 +54,7 @@
 				& .table__cell{
 					min-height:50px;
 				}
+			flex-direction: column;
 		}
 	}
 	&--no-header{

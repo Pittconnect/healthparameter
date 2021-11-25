@@ -25,6 +25,10 @@ instance.interceptors.response.use(
     return response;
   },
   async (error) => {
+    if (error.response.status === 401) {
+      window.localStorage.removeItem("user_state");
+    }
+
     return Promise.reject(error.response);
   }
 );

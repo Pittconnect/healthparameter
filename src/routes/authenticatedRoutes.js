@@ -3,12 +3,17 @@ import { Redirect } from "react-router";
 
 import Route from "./state/types";
 import MapPage from "../pages/Map/Map";
+import AdminPage from "../pages/Admin/Admin";
 import NotFound from "../pages/NotFound/NotFound";
 
 const authenticatedRoutes = [
   {
-    path: Route.ROOT,
+    path: Route.MAP,
     component: MapPage,
+  },
+  {
+    path: Route.ADMIN,
+    component: AdminPage,
   },
   {
     path: Route.NOT_FOUND,

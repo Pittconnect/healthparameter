@@ -1,18 +1,48 @@
-import { useCallback, useContext } from "react";
+import { useCallback, useContext, useMemo } from "react";
+import decode from "jwt-decode";
 
-import { UserContext } from "../context/user";
+import { AuthContext } from "../context/Auth/authContext";
+import { RoleRoutes } from "../routes/state/constants";
+import { isRoute } from "../utils";
 
 export const useUserData = () => {
-  const { user, clearUserData } = useContext(UserContext);
+  const { state, authReset } = useContext(AuthContext);
 
-  const isLoggedIn = user.token && user.username;
+  const decodedToken = useMemo(() => {
+    try {
+      return decode(state.token);
+    } catch (error) {
+      return null;
+    }
+  }, [state.token]);
 
-  const logout = useCallback(clearUserData, [clearUserData]);
+  const isLoggedIn = useMemo(() => {
+    if (!decodedToken) return false;
+
+    const { exp } = decodedToken;
+    const isTokenExpired = exp > Math.floor(Date.now() / 1000);
+
+    return isTokenExpired;
+  }, [decodedToken]);
+
+  const permissions = useMemo(() => {
+    if (!decodedToken) return [];
+
+    const { role } = decodedToken;
+
+    return RoleRoutes[role];
+  }, [decodedToken]);
+
+  const logout = useCallback(authReset, [authReset]);
+
+  const hasRoutePermissions = (route) =>
+    permissions.some((item) => isRoute(route, item));
 
   return {
-    ...user,
+    ...state,
     isLoggedIn,
 
     logout,
+    hasRoutePermissions,
   };
 };

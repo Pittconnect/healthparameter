@@ -25,7 +25,7 @@ export const useSignupData = () => {
       return { error: "Please enter Username, Email and Password" };
 
     const usernamePattern =
-      /^(?=.{6,20}$)(?![_.])(?!.*[_.]{2})[a-zA-Z0-9._]+(?<![_.])$/;
+      /^(?=.{4,20}$)(?![_.])(?!.*[_.]{2})[a-zA-Z0-9._]+(?<![_.])$/;
     if (!usernamePattern.test(String(username).toLowerCase()))
       return { error: "Invalid username" };
 
@@ -105,7 +105,7 @@ export const useSignupData = () => {
         history.push(Route.LOGIN);
       }
     },
-    [email, password, username, pricing]
+    [email, password, username, pricing, history]
   );
 
   const reset = useCallback(() => {

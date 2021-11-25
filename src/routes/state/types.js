@@ -1,5 +1,6 @@
 const Route = {
   ROOT: "/",
+  MAIN: "/*",
 
   LOGIN: "/login",
   SIGNUP: "/signup",
@@ -8,7 +9,9 @@ const Route = {
   RESET_PASSWORD: "/password-reset/:resetToken",
 
   ABOUT: "/about",
+
   MAP: "/map",
+  ADMIN: "/admin",
 
   NOT_FOUND: "/page-not-found",
   ALL: "*",

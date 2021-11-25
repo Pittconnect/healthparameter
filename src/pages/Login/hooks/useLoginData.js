@@ -2,10 +2,10 @@ import { useCallback, useContext, useMemo, useState } from "react";
 
 import Route from "../../../routes/state/types";
 import { loginUser } from "../../../api/loginUser";
-import { UserContext } from "../../../context/user";
+import { AuthContext } from "../../../context/Auth/authContext";
 
 export const useLoginData = () => {
-  const { setUserData } = useContext(UserContext);
+  const { setAuthData } = useContext(AuthContext);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [isRemember, setIsRemember] = useState(false);
@@ -17,7 +17,7 @@ export const useLoginData = () => {
       return { error: "Please enter Username and Password" };
 
     const usernamePattern =
-      /^(?=.{6,20}$)(?![_.])(?!.*[_.]{2})[a-zA-Z0-9._]+(?<![_.])$/;
+      /^(?=.{4,20}$)(?![_.])(?!.*[_.]{2})[a-zA-Z0-9._]+(?<![_.])$/;
     if (!usernamePattern.test(String(username).toLowerCase()))
       return { error: "Invalid username" };
 
@@ -43,16 +43,12 @@ export const useLoginData = () => {
 
       if (!data) return;
 
-      const { token, expiresIn } = data;
-
-      setUserData({
-        username: credentials.username,
+      setAuthData({
+        token: data.token,
         homeUrl: Route.MAP,
-        token,
-        expiresIn,
       });
     },
-    [setUserData, validation]
+    [setAuthData, validation]
   );
 
   const toggleIsRemember = useCallback(

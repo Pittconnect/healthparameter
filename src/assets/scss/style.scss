@@ -416,6 +416,16 @@ h6{
 			background:none;
 			color:$color-blue;
 		}
+
+		&.disabled{
+			color: $color-gray400;
+			background:#fff;
+			border:1px solid $color-gray300;
+			&:hover{
+				background:none;
+				color: $color-gray800;
+			}
+		}
 	}
 	&--lightblue-bg{
 		color:#fff;
@@ -433,6 +443,16 @@ h6{
 		&:hover{
 			background:none;
 			color:$color-pink;
+		}
+
+		&.disabled{
+			color: $color-gray400;
+			background:#fff;
+			border:1px solid $color-gray400;
+			&:hover{
+				background:none;
+				color: $color-gray800;
+			}
 		}
 	}
 
@@ -974,11 +994,15 @@ svg.svg-intro-bottom {
 	font-family: 'Roboto', sans-serif;
 }
 .form__select {
-	width:100%;
+	// width:100%;
 	height:25px;
-	padding:10px 0;
+	padding:5px 8px;
 	border-bottom:1px #a8a8a8 solid;
-	background:url(../images/drop-down.png) no-repeat 98% 50%;
+	background:url(../images/drop-down.png) no-repeat 95% 50%;
+
+	&.border {
+		border: 1px #a8a8a8 solid;
+	}
 }
 
 .form__select select, select.custom-select, select.custom-select-rendered{

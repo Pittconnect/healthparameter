@@ -4,11 +4,11 @@ import { useHistory } from "react-router";
 import Route from "../routes/state/types";
 import { useUserData } from "../hooks";
 import { isRoute } from "../utils";
-import { UNAUTHORIZED_ROUTES } from "../routes/state/constants";
+import { PRIVATE_ROUTES, UNAUTHORIZED_ROUTES } from "../routes/state/constants";
 
 const RedirectContainer = ({ children }) => {
   const history = useHistory();
-  const { isLoggedIn, homeUrl } = useUserData();
+  const { isLoggedIn, homeUrl, hasRoutePermissions } = useUserData();
 
   useEffect(() => {
     if (!isLoggedIn) return;
@@ -19,8 +19,18 @@ const RedirectContainer = ({ children }) => {
       homeUrl
     ) {
       history.push(homeUrl);
+      return;
     }
-  }, [isLoggedIn, history, homeUrl]);
+
+    const privateRoute = PRIVATE_ROUTES.find((item) => isRoute(item));
+    if (
+      !isRoute(Route.NOT_FOUND) &&
+      privateRoute &&
+      !hasRoutePermissions(privateRoute)
+    ) {
+      history.push(Route.NOT_FOUND);
+    }
+  }, [isLoggedIn, history, homeUrl, hasRoutePermissions]);
 
   useEffect(() => {
     if (isLoggedIn) return;

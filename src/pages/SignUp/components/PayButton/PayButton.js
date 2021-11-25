@@ -5,9 +5,9 @@ import "./PayButton.css";
 
 const PayButton = ({ createOrder, approveOrder }) => {
   return (
-    <div className="paypal-button">
+    <div className="paypal-button uk-flex-column">
       <PayPalButton
-        style={{ shape: "pill", tagline: false }}
+        style={{ shape: "pill", tagline: false, layout: "horizontal" }}
         createOrder={createOrder}
         onApprove={approveOrder}
         options={{

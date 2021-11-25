@@ -31,7 +31,7 @@ mapboxgl.workerClass =
 const TOKEN = process.env.REACT_APP_MAPBOX_ACCESS;
 const MAP_STYLE = process.env.REACT_APP_MAPBOX_STYLE;
 
-const Map = () => {
+const Map = ({ initialViewport }) => {
   const [viewport, setViewport] = useState({
     latitude: 40.54097864298709,
     longitude: -99.81367290280828,
@@ -95,18 +95,6 @@ const Map = () => {
       const centerY = vp.unproject([width, (bottomBoundPx[1] - 1 - diff) / 2]);
 
       viewState.latitude = centerY[1];
-    }
-
-    if (isMapLoaded) {
-      const map = mapRef.current.getMap();
-      const mapZoom = map.getZoom();
-      if (mapZoom < ZOOM.COUNTIES) {
-        setIsStateMode(true);
-        setSelectedCounty({ name: "", fips: "" });
-      } else {
-        setIsStateMode(false);
-        setSelectedState("");
-      }
     }
 
     setViewport(viewState);
@@ -242,6 +230,18 @@ const Map = () => {
   };
 
   useEffect(() => {
+    if (!initialViewport) return;
+
+    setViewport({
+      ...initialViewport,
+
+      transitionDuration: 5000,
+      // transitionInterpolator: new FlyToInterpolator(),
+      // transitionEasing: d3.easeCubic
+    });
+  }, [initialViewport]);
+
+  useEffect(() => {
     if (
       !isMapLoaded ||
       isTrackersLoading ||
@@ -302,6 +302,20 @@ const Map = () => {
       setStatesInfo(formalizedData);
     }
   }, [trackers, datesHeader]);
+
+  useEffect(() => {
+    if (isMapLoaded) {
+      const { zoom } = viewport;
+
+      if (zoom < ZOOM.COUNTIES) {
+        setIsStateMode(true);
+        setSelectedCounty({ name: "", fips: "" });
+      } else {
+        setIsStateMode(false);
+        setSelectedState("");
+      }
+    }
+  }, [isMapLoaded, viewport]);
 
   return (
     <div className="map-container">

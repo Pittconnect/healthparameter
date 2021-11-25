@@ -1,31 +1,85 @@
-import { useCallback, useState } from "react";
+import { useCallback, useLayoutEffect, useRef, useState } from "react";
 
-export const useLocalStorage = (key, initialValue) => {
-  const [storedValue, setStoredValue] = useState(() => {
+// const noop = () => {};
+
+// const isBrowser = typeof window !== "undefined";
+
+export const useLocalStorage = (key, initialValue, options) => {
+  // if (!isBrowser) {
+  //   return [initialValue, noop, noop];
+  // }
+  if (!key) {
+    throw new Error("useLocalStorage key may not be falsy");
+  }
+
+  const deserializer = options
+    ? options.raw
+      ? (value) => value
+      : options.deserializer
+    : JSON.parse;
+
+  const initializer = useRef((key) => {
     try {
-      const item = window.localStorage.getItem(key);
+      const serializer = options
+        ? options.raw
+          ? String
+          : options.serializer
+        : JSON.stringify;
 
-      return item ? JSON.parse(item) : initialValue;
-    } catch (error) {
-      console.log(error);
+      const localStorageValue = localStorage.getItem(key);
+      if (localStorageValue !== null) {
+        return deserializer(localStorageValue);
+      } else {
+        initialValue && localStorage.setItem(key, serializer(initialValue));
+        return initialValue;
+      }
+    } catch {
+      // If user is in private mode or has storage restriction
+      // localStorage can throw. JSON.parse and JSON.stringify
+      // can throw, too.
       return initialValue;
     }
   });
 
-  const setValue = useCallback(
-    (value) => {
+  const [state, setState] = useState(() => initializer.current(key));
+
+  useLayoutEffect(() => setState(initializer.current(key)), [key]);
+
+  const set = useCallback(
+    (valOrFunc) => {
       try {
-        const valueToStore =
-          value instanceof Function ? value(storedValue) : value;
+        const newState =
+          typeof valOrFunc === "function" ? valOrFunc(state) : valOrFunc;
+        if (typeof newState === "undefined") return;
+        let value;
 
-        setStoredValue(valueToStore);
+        if (options)
+          if (options.raw)
+            if (typeof newState === "string") value = newState;
+            else value = JSON.stringify(newState);
+          else if (options.serializer) value = options.serializer(newState);
+          else value = JSON.stringify(newState);
+        else value = JSON.stringify(newState);
 
-        window.localStorage.setItem(key, JSON.stringify(valueToStore));
-      } catch (error) {
-        console.log(error);
+        localStorage.setItem(key, value);
+        setState(deserializer(value));
+      } catch {
+        // If user is in private mode or has storage restriction
+        // localStorage can throw. Also JSON.stringify can throw.
       }
     },
-    [key, storedValue]
+    [key, setState, deserializer, options, state]
   );
-  return [storedValue, setValue];
+
+  const remove = useCallback(() => {
+    try {
+      localStorage.removeItem(key);
+      setState(undefined);
+    } catch {
+      // If user is in private mode or has storage restriction
+      // localStorage can throw.
+    }
+  }, [key, setState]);
+
+  return [state, set, remove];
 };

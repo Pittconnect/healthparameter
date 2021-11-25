@@ -41,11 +41,11 @@ const mainRoutes = [
     ],
   },
   {
-    path: Route.MAP,
+    path: Route.MAIN,
     component: MainPage,
   },
   {
-    path: "/about",
+    path: Route.ABOUT,
     component: AboutPage,
   },
 ];

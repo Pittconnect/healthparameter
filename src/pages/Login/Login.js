@@ -20,8 +20,8 @@ const Login = () => {
 
   const inputs = [
     {
-      id: "name",
-      label: "Name",
+      id: "username",
+      label: "Username",
       value: username,
       onChange: setUsername,
     },
