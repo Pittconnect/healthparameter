@@ -1,8 +1,11 @@
+const COUNTIES_TILESET_LAYER_NAME =
+  process.env.REACT_APP_MAPBOX_COUNTIES_TILESET_LAYER_NAME;
+
 const countiesBoundLayer = {
   id: "county-bound",
   type: "fill",
   source: "counties",
-  "source-layer": "gz_2010_us_050_00_500k-7up5re",
+  "source-layer": COUNTIES_TILESET_LAYER_NAME,
   minzoom: 5,
   layout: {},
   filter: ["==", "$type", "Polygon"],
@@ -21,7 +24,7 @@ const countiesBorderLayer = {
   id: "county-border",
   type: "line",
   source: "counties",
-  "source-layer": "gz_2010_us_050_00_500k-7up5re",
+  "source-layer": COUNTIES_TILESET_LAYER_NAME,
   minzoom: 5,
   layout: {},
   paint: {

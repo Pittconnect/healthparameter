@@ -1,7 +1,10 @@
+const STATES_TILESET_LAYER_NAME =
+  process.env.REACT_APP_MAPBOX_STATES_TILESET_LAYER_NAME;
+
 const statesBoundLayer = {
   id: "state-bound",
   source: "states",
-  "source-layer": "gz_2010_us_040_00_500k-as5zb8",
+  "source-layer": STATES_TILESET_LAYER_NAME,
   maxzoom: 5,
   type: "fill",
   layout: {},
@@ -19,7 +22,7 @@ const statesBoundLayer = {
 const statesBorderLayer = {
   id: "state-borders",
   source: "states",
-  "source-layer": "gz_2010_us_040_00_500k-as5zb8",
+  "source-layer": STATES_TILESET_LAYER_NAME,
   type: "line",
   layout: {},
   paint: {
