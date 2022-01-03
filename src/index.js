@@ -7,9 +7,4 @@ import App from "./App";
 
 UIkit.use(Icons);
 
-ReactDOM.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>,
-  document.getElementById("root")
-);
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);

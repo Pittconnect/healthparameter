@@ -1,0 +1,21 @@
+.popup-container {
+  > .popup-chart {
+    width: 95vw;
+    height: 30vh;
+
+    @media screen and (min-width: 320px) {
+      width: 680px;
+      height: 360px;
+    }
+
+    @media screen and (min-width: 1440px) {
+      width: 700px;
+      height: 400px;
+    }
+
+    @media screen and (min-width: 2560px) {
+        width: 1000px;
+        height: 600px;
+      }
+  }
+}

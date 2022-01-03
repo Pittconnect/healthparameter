@@ -60,9 +60,6 @@ export const usaStatesAbbr = [
   { label: "Wyoming", value: "WY", id: "56" },
 ];
 
-export const COVIDTRACKER_API_LINK =
-  "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_US.csv";
-
 export const ZOOM = {
   MIN: 4,
   MAX: 22,

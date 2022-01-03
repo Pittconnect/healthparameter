@@ -19,14 +19,13 @@ const initialUserState = {
   loading: false,
   loadingText: "",
   error: null,
+  errResponse: "",
   users: [],
   user: null,
   me: {
     username: "",
     location: "",
   },
-  errResponse: "",
-  message: null,
 };
 
 export const UserContext = createContext(initialUserState);
@@ -127,6 +126,24 @@ export const UserProvider = ({ children }) => {
     });
   }, []);
 
+  const addUser = useCallback((newUser) => {
+    const { error, ...user } = newUser;
+
+    if (error) {
+      dispatch({
+        type: types.LOADING_FAILURE,
+        payload: error,
+      });
+
+      return;
+    }
+
+    dispatch({
+      type: types.ADD_USER,
+      payload: user,
+    });
+  }, []);
+
   useEffect(() => {
     if (!isLoggedIn) return;
 
@@ -141,6 +158,7 @@ export const UserProvider = ({ children }) => {
 
         editUsers,
         deleteUser,
+        addUser,
       }}
     >
       {children}

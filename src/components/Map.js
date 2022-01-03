@@ -1,37 +1,43 @@
-import React, { useRef, useState, useEffect, useMemo } from "react";
+import React, {
+  useRef,
+  useState,
+  useEffect,
+  useMemo,
+  useCallback,
+} from "react";
 import ReactMapGL, {
   Source,
   Layer,
-  Popup,
   NavigationControl,
   WebMercatorViewport,
 } from "react-map-gl";
 import mapboxgl from "mapbox-gl";
-import moment from "moment";
-import * as d3 from "d3";
-import { csvParse } from "d3-dsv";
 
-import {
-  statesBoundLayer,
-  statesBorderLayer,
-  countiesBoundLayer,
-  countiesBorderLayer,
-} from "./Layers";
+import { ZOOM, BOUNDS } from "../helpers";
 import Spiner from "./spiner/Spiner";
-import MultilineChart from "./charts/multiline";
-import { ErrorPopup } from "../components/popup";
+import { countiesLayers } from "../pages/Map/components/Layers/CountyLayers";
+import { statesLayers } from "../pages/Map/components/Layers/StateLayers";
+import MapPopup from "../pages/Map/components/Popup/Popup";
+import ChartContainer from "../pages/Map/components/Chart/ChartContainer";
 
-import { COVIDTRACKER_API_LINK, ZOOM, BOUNDS } from "../helpers";
-import { useFetch } from "../hooks";
+const TOKEN = process.env.REACT_APP_MAPBOX_ACCESS;
+const MAP_STYLE = process.env.REACT_APP_MAPBOX_STYLE;
+const COUNTIES_TILESET = process.env.REACT_APP_MAPBOX_COUNTIES_TILESET;
+const STATES_TILESET = process.env.REACT_APP_MAPBOX_STATES_TILESET;
 
 mapboxgl.workerClass =
   // eslint-disable-next-line import/no-webpack-loader-syntax
   require("worker-loader!mapbox-gl/dist/mapbox-gl-csp-worker").default;
 
-const TOKEN = process.env.REACT_APP_MAPBOX_ACCESS;
-const MAP_STYLE = process.env.REACT_APP_MAPBOX_STYLE;
-
-const Map = ({ initialViewport }) => {
+const Map = ({
+  loading,
+  initialViewport,
+  featureData,
+  popupCoordinates,
+  updateFeatureData,
+  updatePopupCoordinates,
+  onMapLoading,
+}) => {
   const [viewport, setViewport] = useState({
     latitude: 40.54097864298709,
     longitude: -99.81367290280828,
@@ -39,32 +45,13 @@ const Map = ({ initialViewport }) => {
     bearing: 0,
     pitch: 0,
   });
-  const [isMapLoaded, setIsMapLoaded] = useState(false);
-  const [popupCoords, setPopupCoords] = useState({});
-  const [{ data: trackers, isLoading: isTrackersLoading, error }] = useFetch(
-    COVIDTRACKER_API_LINK,
-    {
-      dataFormat: "csv",
-      dataParser: csvParse,
-    }
-  );
-  const [selectedState, setSelectedState] = useState("");
-  const [selectedCounty, setSelectedCounty] = useState({ name: "", fips: "" });
-  const [isStateMode, setIsStateMode] = useState(true);
-  const [statesInfo, setStatesInfo] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [usGeoJsonCounties, setUsGeoJsonCounties] = useState([]);
-  const [isCountiesLoading, setIsCountiesLoading] = useState(false);
-  const [usGeoJsonStates, setUsGeoJsonStates] = useState([]);
-  const [isStatesLoading, setIsStatesLoading] = useState(false);
 
   const mapRef = useRef();
   const hoveredStateId = useRef(null);
   const hoveredStateSource = useRef(null);
+  const hoveredSourceLayer = useRef(null);
 
-  const _onLoad = () => setIsMapLoaded(true);
-
-  const _onViewStateChange = ({ viewState }) => {
+  const onViewStateChange = (viewState) => {
     const { width, height } = viewState;
     const vp = new WebMercatorViewport(viewState);
     const wn = vp.unproject([0, 0]);
@@ -97,48 +84,68 @@ const Map = ({ initialViewport }) => {
       viewState.latitude = centerY[1];
     }
 
-    setViewport(viewState);
+    setViewport({
+      ...viewState,
+    });
   };
 
-  const _onMouseHover = (event) => {
-    if (isMapLoaded) {
+  const onMapClick = ({ features, lngLat }) => {
+    if (loading) return;
+
+    const featureSource = viewport.zoom > ZOOM.COUNTIES ? "counties" : "states";
+    const [feature] = features.filter(
+      (feature) => feature.source === featureSource
+    );
+
+    let coordinates;
+    if (feature) {
+      coordinates = lngLat;
+    }
+
+    updateFeatureData(feature);
+    updatePopupCoordinates(coordinates);
+  };
+
+  const onMouseHover = (event) => {
+    if (!loading) {
       const map = mapRef.current.getMap();
       const mapZoom = map.getZoom();
       const hoveredLayer = mapZoom > ZOOM.COUNTIES ? "counties" : "states";
-      const { features, lngLat } = event;
+      const { features } = event;
 
       const hoveredFeature = features.find(
         (f) => f.layer.id === "state-bound" || f.layer.id === "county-bound"
       );
+
       if (hoveredFeature) {
-        const [longitude, latitude] = lngLat;
-        setPopupCoords({ longitude, latitude });
-
-        if (mapZoom < ZOOM.COUNTIES) {
-          getStateInfo(hoveredFeature);
-        } else {
-          getCountyInfo(hoveredFeature);
-        }
-
         if (hoveredStateSource.current) {
           map.setFeatureState(
-            { source: hoveredStateSource.current, id: hoveredStateId.current },
+            {
+              source: hoveredStateSource.current,
+              sourceLayer: hoveredSourceLayer.current,
+              id: hoveredStateId.current,
+            },
             { hover: false }
           );
         }
 
         hoveredStateId.current = hoveredFeature.id;
         hoveredStateSource.current = hoveredFeature.source;
+        hoveredSourceLayer.current = hoveredFeature.sourceLayer;
 
         map.setFeatureState(
-          { source: hoveredStateSource.current, id: hoveredStateId.current },
+          {
+            source: hoveredStateSource.current,
+            sourceLayer: hoveredSourceLayer.current,
+            id: hoveredStateId.current,
+          },
           { hover: true }
         );
       } else {
-        setPopupCoords({});
         map.setFeatureState(
           {
             source: hoveredStateSource.current || hoveredLayer,
+            sourceLayer: hoveredSourceLayer.current,
             id: hoveredStateId.current,
           },
           { hover: false }
@@ -150,180 +157,55 @@ const Map = ({ initialViewport }) => {
     }
   };
 
-  const datesHeader = useMemo(
-    () =>
-      trackers?.columns.filter((column) =>
-        moment(column, "M/D/YY", true).isValid()
-      ),
-    [trackers]
-  );
+  const onInteractionStateChange = useCallback(() => {
+    if (!popupCoordinates) return;
 
-  const getMonthlyCases = (dataSet) =>
-    d3
-      .nest()
-      .key((d) => moment(d.date, "M/D/YY", true).format("YYYY"))
-      .key((d) => moment(d.date, "M/D/YY", true).format("MMM"))
-      .entries(dataSet);
-
-  const updatedStateData = useMemo(() => {
-    if (statesInfo.length && selectedState) {
-      const stateInfo = statesInfo.find((state) => state.key === selectedState);
-
-      const stateMonthlyCases = getMonthlyCases(stateInfo.value);
-
-      const formalizedStateCasesData = d3
-        .nest()
-        .rollup(() => stateMonthlyCases)
-        .entries([stateInfo]);
-
-      return formalizedStateCasesData;
-    }
-  }, [selectedState, statesInfo]);
-
-  const updateCountyData = useMemo(() => {
-    if (trackers && selectedCounty.fips) {
-      const countyInfo = trackers.find(
-        (county) => +county.FIPS === +selectedCounty.fips
-      );
-
-      if (countyInfo) {
-        const countyDayliChanges = datesHeader.map((date, index, dates) => ({
-          date,
-          cases:
-            index > 0
-              ? +countyInfo[date] - +countyInfo[dates[index - 1]]
-              : +countyInfo[date],
-        }));
-
-        const countyMonthlyCases = getMonthlyCases(countyDayliChanges);
-
-        return countyMonthlyCases;
-      }
-    }
-  }, [selectedCounty.fips, trackers, datesHeader]);
-
-  const chartData = useMemo(
-    () => (isStateMode ? updatedStateData : updateCountyData),
-    [isStateMode, updatedStateData, updateCountyData]
-  );
-
-  const adminUnit = useMemo(
-    () => (isStateMode ? selectedState : selectedCounty.name),
-    [isStateMode, selectedState, selectedCounty.name]
-  );
-
-  const getStateInfo = (feature) => {
-    const stateName = feature.properties.NAME;
-
-    setSelectedState(stateName);
-  };
-
-  const getCountyInfo = (feature) => {
-    const { GEO_ID, NAME /*  STATE */ } = feature.properties;
-
-    const indStartPos = GEO_ID.includes("US0")
-      ? GEO_ID.indexOf("US0") + 3
-      : GEO_ID.indexOf("US") + 2;
-    const countyFIPS = GEO_ID.substring(indStartPos, GEO_ID.length);
-
-    setSelectedCounty({ fips: countyFIPS, name: NAME });
-  };
+    updatePopupCoordinates();
+  }, [popupCoordinates, updatePopupCoordinates]);
 
   useEffect(() => {
     if (!initialViewport) return;
 
     setViewport({
       ...initialViewport,
-
-      transitionDuration: 5000,
-      // transitionInterpolator: new FlyToInterpolator(),
-      // transitionEasing: d3.easeCubic
     });
   }, [initialViewport]);
 
-  useEffect(() => {
-    if (
-      !isMapLoaded ||
-      isTrackersLoading ||
-      isStatesLoading ||
-      isCountiesLoading
-    ) {
-      setIsLoading(true);
-    } else {
-      setIsLoading(false);
-    }
-  }, [
-    isMapLoaded,
-    isTrackersLoading,
-    trackers,
-    isCountiesLoading,
-    isStatesLoading,
-  ]);
+  const statesSource = useMemo(
+    () => (
+      <Source
+        id="counties"
+        type="vector"
+        url={COUNTIES_TILESET}
+        promoteId="GEO_ID"
+      >
+        {countiesLayers.map((layerProps, layerIdx) => (
+          <Layer key={layerIdx} {...layerProps} beforeId={"waterway-label"} />
+        ))}
+      </Source>
+    ),
+    []
+  );
 
-  useEffect(() => {
-    setIsCountiesLoading(true);
-    setIsStatesLoading(true);
-
-    import("../data/gz_2010_us_050_00_500k.json").then((counties) => {
-      setUsGeoJsonCounties(counties.default);
-      setIsCountiesLoading(false);
-    });
-    import("../data/gz_2010_us_040_00_500k.json").then((states) => {
-      setUsGeoJsonStates(states.default);
-      setIsStatesLoading(false);
-    });
-  }, []);
-
-  useEffect(() => {
-    if (trackers) {
-      const formalizedData = d3
-        .nest()
-        .key((d) => d.Province_State)
-        .rollup((v) =>
-          v.reduce(
-            (commonCounty, currentCounty, countyIndex, counties) =>
-              datesHeader.map((date, index, dates) => ({
-                date,
-                cases:
-                  countyIndex > 0
-                    ? index > 0
-                      ? +counties[countyIndex - 1][date] -
-                        +counties[countyIndex - 1][dates[index - 1]] +
-                        +currentCounty[date] -
-                        +currentCounty[dates[index - 1]]
-                      : +counties[countyIndex - 1][date] + +currentCounty[date]
-                    : +currentCounty[date],
-              })),
-            {}
-          )
-        )
-        .entries(trackers);
-
-      setStatesInfo(formalizedData);
-    }
-  }, [trackers, datesHeader]);
-
-  useEffect(() => {
-    if (isMapLoaded) {
-      const { zoom } = viewport;
-
-      if (zoom < ZOOM.COUNTIES) {
-        setIsStateMode(true);
-        setSelectedCounty({ name: "", fips: "" });
-      } else {
-        setIsStateMode(false);
-        setSelectedState("");
-      }
-    }
-  }, [isMapLoaded, viewport]);
+  const countiesSource = useMemo(
+    () => (
+      <Source id="states" type="vector" url={STATES_TILESET} promoteId="GEO_ID">
+        {statesLayers.map((layerProps, layerIdx) => (
+          <Layer key={layerIdx} {...layerProps} beforeId={"waterway-label"} />
+        ))}
+      </Source>
+    ),
+    []
+  );
 
   return (
     <div className="map-container">
-      {isLoading && (
+      {loading && (
         <div className="map-spinner">
           <Spiner />
         </div>
       )}
+
       <ReactMapGL
         {...viewport}
         ref={mapRef}
@@ -331,72 +213,35 @@ const Map = ({ initialViewport }) => {
         height="100vh"
         mapboxApiAccessToken={TOKEN}
         mapStyle={MAP_STYLE}
-        onViewStateChange={_onViewStateChange}
-        onLoad={_onLoad}
-        onHover={_onMouseHover}
+        onLoad={onMapLoading}
+        onViewportChange={onViewStateChange}
+        onHover={onMouseHover}
+        onClick={onMapClick}
+        onInteractionStateChange={onInteractionStateChange}
         minZoom={ZOOM.MIN}
         maxZoom={ZOOM.MAX}
         attributionControl={false}
+        dragRotate={false}
+        touchRotate={false}
+        scrollZoom={{
+          smooth: true,
+          speed: 0.01,
+        }}
+        transitionDuration={0}
       >
-        {Object.entries(popupCoords).length !== 0 && (
-          <Popup
-            latitude={popupCoords.latitude}
-            longitude={popupCoords.longitude}
-            closeButton={false}
-            // anchor={"top"}
-            anchor={"bottom-right"}
-          >
-            <div className="popup-container">
-              <div className="popup-chart">
-                {!error ? (
-                  chartData && (
-                    <MultilineChart
-                      data={chartData}
-                      header={`Daily changes in Covid-19 confirmations, ${adminUnit}`}
-                      xAxisLabel={"Date"}
-                      yAxisLabel={"Daily changes"}
-                      xAxisTicks={32}
-                      yAxisTicks={26}
-                      width={850}
-                      height={390}
-                      margins={{ top: 50, right: 10, bottom: 50, left: 60 }}
-                      legendMargins={{
-                        top: 20,
-                        right: 0,
-                        bottom: 0,
-                        left: 10,
-                      }}
-                    />
-                  )
-                ) : (
-                  <ErrorPopup />
-                )}
-              </div>
-            </div>
-          </Popup>
-        )}
-        {usGeoJsonCounties.length !== 0 && (
-          <Source
-            id="counties"
-            type="geojson"
-            data={usGeoJsonCounties}
-            generateId={true}
-          >
-            <Layer {...countiesBoundLayer} beforeId={"waterway-label"} />
-            <Layer {...countiesBorderLayer} beforeId={"waterway-label"} />
-          </Source>
-        )}
-        {usGeoJsonStates.length !== 0 && (
-          <Source
-            id="states"
-            type="geojson"
-            data={usGeoJsonStates}
-            generateId={true}
-          >
-            <Layer {...statesBoundLayer} beforeId={"waterway-label"} />
-            <Layer {...statesBorderLayer} beforeId={"waterway-label"} />
-          </Source>
-        )}
+        <MapPopup coordinates={popupCoordinates}>
+          <ChartContainer
+            axisHeader={{
+              left: "Daily changes",
+              top: `Daily changes in Covid-19 confirmations, ${featureData?.name}`,
+              bottom: "Date",
+            }}
+            data={featureData?.data}
+          />
+        </MapPopup>
+
+        {statesSource}
+        {countiesSource}
 
         <NavigationControl className="map-navigation" showCompass={false} />
       </ReactMapGL>

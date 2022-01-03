@@ -7,7 +7,6 @@ export default (state, action) => {
         ...state,
         loading: true,
         loadingText: action.payload,
-        message: null,
         user: null,
         error: null,
       };
@@ -47,7 +46,12 @@ export default (state, action) => {
         error: false,
         errResponse: "",
         user: null,
-        message: "Deleted successfully",
+      };
+
+    case types.ADD_USER:
+      return {
+        ...state,
+        users: [...state.users, action.payload],
       };
 
     case types.LOADING_FAILURE:

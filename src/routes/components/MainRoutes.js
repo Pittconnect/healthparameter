@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { Route, Switch, useLocation } from "react-router";
+import { Route, Switch, useLocation } from "react-router-dom";
 
 import mainRoutes from "../mainRoutes";
 import AuthModalContainer from "../../layout/AuthModalContainer";

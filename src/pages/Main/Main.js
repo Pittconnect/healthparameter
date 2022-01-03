@@ -44,7 +44,7 @@ const MainPage = () => {
 
   return (
     <LoadingContainer loading={loading}>
-      <div className="covid-map">
+      <div className="covid-map uk-overflow-auto uk-height-1-1">
         <div className="map-panel uk-position-absolute uk-position-z-index uk-width-auto uk-position-top-right uk-flex uk-flex-middle uk-tile uk-tile-muted uk-text-secondary uk-border-pill ">
           <div className="uk-text-default">{username}</div>
           <span className="signout-icon uk-iconnav" onClick={logout}>

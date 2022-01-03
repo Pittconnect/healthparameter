@@ -1,5 +1,7 @@
 import React from "react";
-import * as d3 from 'd3'
+import { scaleOrdinal, scaleLinear, scaleBand } from "d3-scale";
+import { max } from "d3-array";
+import { format } from "d3-format";
 
 import Rect from "./Rect";
 import Text from "./Text";
@@ -23,33 +25,28 @@ const GroupedBar = ({
   const legendHeight = contentHeight / 3;
   const chartHeight = contentHeight - legendHeight;
 
-  const colorScale = d3
-    .scaleOrdinal()
+  const colorScale = scaleOrdinal()
     .domain(data.map((d, i) => i))
     .range(GROUPED_BAR_COLORS);
 
-  const x = d3
-    .scaleLinear()
-    .domain([0, d3.max(data)])
+  const x = scaleLinear()
+    .domain([0, max(data)])
     .range([0, contentWidth]);
-  const y = d3
-    .scaleBand()
+  const y = scaleBand()
     .range([0, chartHeight])
     .domain(data.map((d, i) => i))
     .padding(0.1);
 
-  const legColorScale = d3
-    .scaleOrdinal()
+  const legColorScale = scaleOrdinal()
     .domain(legendData)
     .range(GROUPED_BAR_COLORS);
 
-  const legX = d3
-    .scaleBand()
+  const legX = scaleBand()
     .range([0, contentWidth])
     .domain(legendData)
     .paddingInner(0.1);
 
-  const format = d3.format(".2f");
+  const floatFormat = format(".2f");
   const chartFontSize = 12;
 
   const _translateX = (x) => {
@@ -78,7 +75,7 @@ const GroupedBar = ({
                 dominantBaseline="middle"
                 fill={"#fff"}
                 fontSize={chartFontSize}
-                text={`${format((d * 100) / d3.max(data))}%`}
+                text={`${floatFormat((d * 100) / max(data))}%`}
               />
             )}
           </React.Fragment>

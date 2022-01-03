@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
-import { useHistory, useLocation } from "react-router";
+import { useHistory, useLocation } from "react-router-dom";
+// import { useHistory, useLocation } from "react-router";
 import clsx from "clsx";
 
 import AuthContainerFormInputs from "./components/AuthContainerFormInputs";

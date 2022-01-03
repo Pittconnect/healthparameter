@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect } from "react";
-import { useParams } from "react-router";
+import { useParams } from "react-router-dom";
 
 import AuthContainer from "../../components/AuthContainer";
 import { useResetPasswordData } from "./hooks/useResetPasswordData";

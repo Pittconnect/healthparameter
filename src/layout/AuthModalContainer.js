@@ -1,6 +1,6 @@
 import React from "react";
 import clsx from "clsx";
-import { useHistory, useLocation } from "react-router";
+import { useHistory, useLocation } from "react-router-dom";
 
 const AuthModalContainer = ({ children, parentRoute }) => {
   const history = useHistory();

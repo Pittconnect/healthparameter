@@ -3,7 +3,7 @@ import clsx from "clsx";
 
 import { upsert } from "../../../../utils/arrays";
 
-const Table = ({ data, columns, controls }) => {
+const Table = ({ title, data, columns, controls }) => {
   const [tableData, setTableData] = useState([...data]);
   const [modifiedItems, setModifiedItems] = useState([]);
 
@@ -29,7 +29,11 @@ const Table = ({ data, columns, controls }) => {
   }, [data]);
 
   return (
-    <div className="table-wrapper uk-background-default uk-padding-small uk-overflow-hidden">
+    <div className="table-wrapper uk-background-default uk-border-rounded uk-padding-small uk-overflow-hidden">
+      <div className="uk-margin-small">
+        <div className="uk-heading-small">{title}</div>
+      </div>
+
       <div className="grid">
         <div className="grid__row">
           <div className="grid__col bg-white">
@@ -78,7 +82,7 @@ const Table = ({ data, columns, controls }) => {
       </div>
 
       <div
-        className="table-controls uk-grid uk-grid-column-small uk-child-width-auto"
+        className="table-controls uk-grid uk-grid-column-small uk-grid-row-collapse uk-child-width-auto"
         uk-grid=""
       >
         {controls.map(({ text, classes, onClick }, idx) => (

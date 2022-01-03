@@ -1,4 +1,4 @@
-export const usaOption = { label: "USA", value: "", id: "00" };
+export const usaOption = { label: "USA", value: "usa", id: "00" };
 
 export const userRoles = [
   { value: "admin", label: "admin" },

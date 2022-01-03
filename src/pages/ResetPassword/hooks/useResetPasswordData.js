@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
-import { useHistory } from "react-router";
+import { useHistory } from "react-router-dom";
 
 import Route from "../../../routes/state/types";
 import { resetPassword } from "../../../api/resetPassword";

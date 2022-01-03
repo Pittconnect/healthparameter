@@ -39,3 +39,13 @@ export const removeUser = async (userId) => {
     return { data, error: data.msg };
   }
 };
+
+export const createUser = async (userData) => {
+  try {
+    const { data } = await api.post("/create", { ...userData });
+
+    return { data, error: data.success ? null : data.msg };
+  } catch ({ data }) {
+    return { data, error: data.msg };
+  }
+};
