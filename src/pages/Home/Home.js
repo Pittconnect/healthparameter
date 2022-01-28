@@ -37,30 +37,45 @@ import Avatar3 from "./images/avatar-3.jpg";
 import FacebookIcon from "./images/social/white/facebook.png";
 import LinkedinIcon from "./images/social/white/linkedin.png";
 import TwitterIcon from "./images/social/white/twitter.png";
+import { HealthparamsLogo } from "../../assets/icons/HealthparamsLogo";
+
+import "./Home.scss";
 
 const HomePage = () => {
   return (
     <>
       <header className="header">
         <div className="header__content header__content--fluid-width">
-          <div className="header__logo-title">
-            medi<span>kit</span>
+          <div className="header__logo-title uk-flex uk-flex-center uk-flex-middle">
+            <div className="logo-wrapper">
+              <HealthparamsLogo />
+            </div>
+            health<span>params</span>
           </div>
           <nav className="header__menu">
             <ul>
               <li>
                 <a className="selected header-link" href="#intro">
-                  HOME
+                  <div className="nav-link-icon">
+                    <HealthparamsLogo />
+                  </div>
+                  ABOUT
                 </a>
               </li>
               <li>
                 <a href="dashboard.html" className="header-link">
+                  <div className="nav-link-icon">
+                    <HealthparamsLogo />
+                  </div>
                   DASHBOARD
                 </a>
               </li>
               <li className="menu-item-has-children">
                 <a href="#morefeatures" className="header-link">
-                  FEATURES
+                  <div className="nav-link-icon">
+                    <HealthparamsLogo />
+                  </div>
+                  SERVICES
                 </a>
                 <ul className="sub-menu">
                   <li>
@@ -92,6 +107,9 @@ const HomePage = () => {
               </li>
               <li>
                 <a href="#pricing" className="header-link">
+                  <div className="nav-link-icon">
+                    <HealthparamsLogo />
+                  </div>
                   PRICING
                 </a>
               </li>

@@ -1,0 +1,82 @@
+.logo-wrapper {
+  cursor: pointer;
+  width: 60px;
+  height: 60px;
+}
+
+.header-link {
+  display: flex !important;
+
+  .nav-link-icon {
+    cursor: pointer;
+    width: 40px;
+    height: 40px;
+  }
+}
+
+svg.app-logo {
+  overflow: visible !important;
+
+  > .wrapper {
+    > .container {
+      .space,
+      .gases-outside,
+      .gases-inside,
+      .fire,
+      .light,
+      .electro-magnetic,
+      .liquid,
+      .solid {
+        transition: all 0.6s;
+        transform-box: fill-box;
+        transform-origin: center;
+      }
+
+      .fire,
+      .light,
+      .electro-magnetic,
+      .liquid,
+      .solid {
+        -webkit-filter: drop-shadow(0px 0px 15px rgba(0, 0, 0, 0));
+        filter: drop-shadow(0px 0px 15px rgba(0, 0, 0, 0));
+        stroke: #fff;
+        stroke-width: 0%;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      > .space,
+      > .gases-outside,
+      > .gases-inside {
+        opacity: 1;
+      }
+
+      &:hover {
+        .layer-container {
+          > .space,
+          > .gases-outside {
+            opacity: 0;
+          }
+
+          > .solid {
+            -webkit-filter: drop-shadow(0px 0px 15px rgba(0, 0, 0, 0.5));
+            filter: drop-shadow(0px 0px 15px rgba(0, 0, 0, 0.5));
+          }
+
+          > .fire,
+          > .light {
+            stroke-width: 0.8%;
+            -webkit-filter: drop-shadow(0px 0px 15px rgba(0, 0, 0, 0.5));
+            filter: drop-shadow(0px 0px 15px rgba(0, 0, 0, 0.5));
+          }
+
+          > .electro-magnetic {
+            stroke-width: 1%;
+            -webkit-filter: drop-shadow(0px 0px 10px rgba(0, 0, 0, 0.2));
+            filter: drop-shadow(0px 0px 10px rgba(0, 0, 0, 0.2));
+          }
+        }
+      }
+    }
+  }
+}
